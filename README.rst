@@ -1,5 +1,7 @@
 Boot.py is a set of tools to build simple scripts.
 
+.. image:: https://badge.fury.io/py/boot.py.svg
+    :target: https://badge.fury.io/py/boot.py
 
 Install and Use
 ---------------
