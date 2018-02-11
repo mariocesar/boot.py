@@ -45,7 +45,6 @@ environment, install requirements, and create some files.
             with open(envfile, 'w') as handle:
                 os.chmod(envfile, 0o600)
                 handle.write('')
-::
 
 This will output.
 
@@ -57,3 +56,5 @@ This will output.
     Installing project ... [Ok]
     Creating directories ... [Ok]
     Environment file ... [Ok]
+
+Simple!

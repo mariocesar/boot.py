@@ -5,7 +5,7 @@ import subprocess
 import sys
 import pathlib
 import json
-from json import JSONDecodeError
+
 from urllib.request import urlopen
 from collections import namedtuple
 from contextlib import contextmanager
@@ -58,7 +58,7 @@ def prompt(spec_path: str):
 
     try:
         spec = json.loads(open(path, 'rt'))
-    except JSONDecodeError:
+    except json.JSONDecodeError:
         raise ValueError('Unable to parse the variables specs.')
 
     if not isinstance(spec, dict):
