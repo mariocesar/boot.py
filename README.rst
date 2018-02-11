@@ -1,4 +1,4 @@
-Boot.py is a set of tools to build simple scripts.
+Boot.py is an small set of tools to build simple scripts. 2Kb Total Size
 
 .. image:: https://badge.fury.io/py/boot.py.svg
     :target: https://pypi.python.org/pypi/boot.py/
@@ -6,14 +6,14 @@ Boot.py is a set of tools to build simple scripts.
 Install and Use
 ---------------
 
-Install simple by.
+Install with pip.
 
 .. code-block:: console
 
     pip install boot.py
 
 
-Create a file and import `boot`. For example this, will install a virtual
+Create a file and import `boot`. For example this will install a virtual
 environment, install requirements, and create some files.
 
 .. code-block:: python
