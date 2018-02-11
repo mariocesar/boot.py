@@ -1,4 +1,4 @@
-Boot.py is an small set of tools to build simple scripts. 2Kb Total Size
+Boot.py is an small set of tools to build simple scripts. Python3 only, and really small: 2Kb!
 
 .. image:: https://badge.fury.io/py/boot.py.svg
     :target: https://pypi.python.org/pypi/boot.py/
