@@ -10,7 +10,9 @@ Install simple by.::
 ::
 
 Create a file and import `boot`. For example this, will install a virtual
-environment, install requirements, and create some files.::
+environment, install requirements, and create some files.
+
+.. code-block:: python
 
     #!/usr/bin/env python3
     import os
