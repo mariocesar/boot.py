@@ -12,7 +12,7 @@ setup(
     name='boot.py',
     author='Mario César Señoranis Ayala',
     author_email='mariocesar.c50@gmail.com',
-    version='0.1',
+    version='0.2',
     url='https://github.com/mariocesar/boot.py',
     description=description,
     long_description=long_description,
