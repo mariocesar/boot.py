@@ -15,7 +15,7 @@ setup(
     version='0.2',
     url='https://github.com/mariocesar/boot.py',
     description=description,
-    long_description=long_description,
+    long_description=f'\n{long_description}',
     package_dir={'': 'src'},
     packages=find_packages('src', exclude=['tests']),
     python_requires='>=3.6',
