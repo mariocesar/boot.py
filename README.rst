@@ -50,8 +50,8 @@ This will output.
 .. code-block:: console
 
     $ ./script.py
-    Creating virtualenv in .venv ...  [Ok]
-    Installing requirements ...  [Ok]
-    Installing project ...  [Ok]
-    Creating directories ...  ...  [Ok]
-    Environment file ...  [Ok]
+    Creating virtualenv in .venv ... [Ok]
+    Installing requirements ... [Ok]
+    Installing project ... [Ok]
+    Creating directories ... [Ok]
+    Environment file ... [Ok]
