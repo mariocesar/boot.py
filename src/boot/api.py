@@ -33,12 +33,15 @@ def warn(message: str):
 
 
 def indent(message: str, out=sys.stdout):
+    """Indent the message given"""
     for line in message.strip().split('\n'):
         out.write(f'    {line}\n')
         out.flush()
 
 
 def prompt(spec_path: str):
+    """Ask for values defined in a json file"""
+
     path = pathlib.Path(spec_path).resolve()
 
     try:
@@ -62,6 +65,8 @@ def prompt(spec_path: str):
 
 
 def urlfetch(url: str, dest=None):
+    """Fetch an url, returns the output or write to `dest`"""
+
     response = urlopen(url)
 
     if dest:
