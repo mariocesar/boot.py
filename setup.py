@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys
 
 from setuptools import find_packages, setup
@@ -18,7 +19,7 @@ setup(
     description=description,
     long_description=f'\n{long_description}',
     package_dir={'': 'src'},
-    packages=find_packages('src', exclude=['tests']),
+    packages=find_packages('src'),
     python_requires='>=3.6',
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'pytest-cov'],

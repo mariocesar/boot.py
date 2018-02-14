@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import os
 import shlex
 import subprocess
@@ -7,31 +6,17 @@ import pathlib
 import json
 
 from urllib.request import urlopen
-from collections import namedtuple
 from contextlib import contextmanager
+
+from .types import Color, RunResult
 
 assert sys.version_info >= (3, 6), "This projects needs python3.6 or greater"
 
-os.environ['LANG'] = 'C'
 
-__all__ = ['Color', 'echo', 'abort', 'warn', 'indent', 'step', 'run']
-
-
-class Color:
-    red = '\033[31m'
-    green = '\033[32m'
-    yellow = '\033[33m'
-    blue = '\033[34m'
-    magenta = '\033[35m'
-    cyan = '\033[36m'
-    gray = '\033[37m'
-
-    bold = '\033[1m'
-    underline = '\033[4m'
-    reset = '\033[0m'
+__all__ = ['echo', 'abort', 'warn', 'indent', 'step', 'run']
 
 
-def echo(message, out=sys.stdout):
+def echo(message: str, out=sys.stdout):
     out.write(message)
     out.flush()
 
@@ -88,8 +73,8 @@ def urlfetch(url: str, dest=None):
 
 
 @contextmanager
-def step(*args, **kwargs):
-    echo(*args, **kwargs)
+def step(message: str, **kwargs):
+    echo(message, **kwargs)
     echo(' ... ')
 
     try:
@@ -103,9 +88,6 @@ def step(*args, **kwargs):
         sys.exit(1)
     else:
         echo(f' {Color.bold + Color.green}[Ok]{Color.reset}\n')
-
-
-RunResult = namedtuple('RunResult', 'out,exitcode')
 
 
 def run(command: str):
