@@ -90,7 +90,22 @@ def step(message: str, **kwargs):
         echo(f' {Color.bold + Color.green}[Ok]{Color.reset}\n')
 
 
-def run(command: str):
+@contextmanager
+def cd(path: str):
+    """Switch the working directory within the context"""
+
+    old = os.getcwd()
+    os.chdir(path)
+
+    try:
+        yield
+    finally:
+        os.chdir(old)
+
+
+def run(command: str) -> RunResult:
+    """Run a shell command, returns the output and exitcode"""
+
     proc = subprocess.Popen(
         shlex.split(command),
         stdout=subprocess.PIPE,
