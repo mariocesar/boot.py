@@ -22,6 +22,7 @@ environment, install requirements, and create some files.
     import os
     import venv
 
+    from boot import step, run
     from pathlib import Path
 
     root_path = Path(__file__).parent.resolve()
@@ -58,3 +59,67 @@ This will output.
     Environment file ... [Ok]
 
 Simple!
+
+You can also compose tasks to decide what to execute and what order.
+
+.. code-block:: python
+
+    #!/usr/bin/env python3
+    import os
+    import venv
+
+    from boot import step, run, task
+    from pathlib import Path
+
+    root_path = Path(__file__).parent.resolve()
+    venv_dir = root_path / '.venv'
+
+
+    @task
+    def build(this)
+        with step(f'Creating virtualenv in {venv_dir.name}'):
+            if not venv_dir.exists():
+                venv.create(venv_dir, with_pip=True)
+
+        with step('Creating directories'):
+            run(f'mkdir -p public/media')
+            run(f'mkdir -p public/static')
+
+        with step('Environment file'):
+            envfile = root_path / '.env'
+
+            if not envfile.exists():
+                with open(envfile, 'w') as handle:
+                    os.chmod(envfile, 0o600)
+                    handle.write('')
+
+
+    @task
+    def requirements(this)
+        with step('Installing requirements'):
+            run(f'{venv_dir / "bin/pip"} install -r requirements.txt')
+
+
+    @task
+    def backup(this)
+        with step(f'Backup db'):
+            run('pg_dump -d database -f output.sql')
+
+
+    if __name__ == '__main__':
+        tasks = {
+            'default': build >> requirements,
+            'build': build,
+            'requirements': requirements,
+        }
+
+
+        if len(sys.argv) == 1:
+            if sys.argv[0] in tasks:
+                tasks[sys.argv[0]]()
+            else:
+                print(f'Unknown task: {sys.argv[0]}')
+                print(f'Available tasks are: {tasks.keys()}')
+        else:
+            default()
+

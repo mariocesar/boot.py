@@ -1,24 +1,22 @@
+import json
 import os
+import pathlib
 import shlex
 import subprocess
 import sys
-import pathlib
-import json
-
-from urllib.request import urlopen
+from collections.abc import MutableMapping
 from contextlib import contextmanager
+from urllib.request import urlopen
 
 from .types import Color, RunResult
 
 assert sys.version_info >= (3, 6), "This projects needs python3.6 or greater"
 
+__all__ = ['echo', 'abort', 'warn', 'indent', 'step', 'run', 'task', 'Task']
 
-__all__ = ['echo', 'abort', 'warn', 'indent', 'step', 'run']
 
-
-def echo(message: str, out=sys.stdout):
-    out.write(message)
-    out.flush()
+def echo(message: str, end='\n'):
+    sys.stdout.write(message + end)
 
 
 def abort(message: str):
@@ -32,11 +30,20 @@ def warn(message: str):
     sys.stderr.flush()
 
 
-def indent(message: str, out=sys.stdout):
+@contextmanager
+def indent():
     """Indent the message given"""
-    for line in message.strip().split('\n'):
-        out.write(f'    {line}\n')
-        out.flush()
+    old_write = sys.stdout.write
+    prefix = '    {}'.format
+
+    def write(val):
+        old_write(prefix(val))
+
+    sys.stdout.write = write
+
+    yield
+
+    sys.stdout.write = old_write
 
 
 def prompt(spec_path: str):
@@ -53,7 +60,9 @@ def prompt(spec_path: str):
         raise ValueError(f'Expected a key, value object. got type {type(spec)}')
 
     for key in spec:
-        if not isinstance(spec[key], (str, float, bool, int, None)):
+        val = spec[key]
+
+        if val is not None and not isinstance(spec[key], (str, float, bool, int)):
             raise ValueError(f'Unsupported spec value for {key}: type {type(spec)}')
 
     values = {}
@@ -78,21 +87,21 @@ def urlfetch(url: str, dest=None):
 
 
 @contextmanager
-def step(message: str, **kwargs):
-    echo(message, **kwargs)
-    echo(' ... ')
+def step(message: str):
+    echo(message, end='')
+    echo(' ... ', end='')
 
     try:
         yield
-    except AssertionError as err:
-        echo(f' {Color.red}[Failed]{Color.reset}\nError: {err!s}\n')
-        sys.exit(1)
     except Exception as err:
-        echo(f' {Color.red}[Failed]{Color.reset}\n')
-        echo(repr(err))
-        sys.exit(1)
+        echo(f'{Color.bold_red}[Error]{Color.reset}')
+
+        if hasattr(err, 'message'):
+            echo(f'{err.message}')
+        else:
+            echo(f'{err!r}')
     else:
-        echo(f' {Color.bold + Color.green}[Ok]{Color.reset}\n')
+        echo(f'{Color.bold_green}[Ok]{Color.reset}')
 
 
 @contextmanager
@@ -119,3 +128,43 @@ def run(command: str) -> RunResult:
     (stdout, stderr) = proc.communicate()
 
     return RunResult(stdout.decode(), proc.returncode)
+
+
+class Task(MutableMapping):
+    __slots__ = ['_queue', '_context']
+
+    def __init__(self, func, *args):
+        self._context = {}
+        self._queue = []
+        self._queue.append(func)
+
+    def __getitem__(self, key):
+        return self._context[key]
+
+    def __setitem__(self, key, value):
+        self._context[key] = value
+
+    def __delitem__(self, key):
+        del self._context[key]
+
+    def __iter__(self):
+        return iter(self._context)
+
+    def __len__(self):
+        return len(self._queue)
+
+    def __rshift__(self, other):
+        if isinstance(other, Task):
+            self._queue.extend(other._queue)
+        else:
+            self._queue.append(other)
+        return self
+
+    def __call__(self, *args, **kwargs):
+        for func in self._queue:
+            func(self)
+        return self
+
+
+def task(func):
+    return Task(func)

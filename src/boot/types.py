@@ -14,5 +14,13 @@ class Color:
     underline = '\033[4m'
     reset = '\033[0m'
 
+    bold_red = bold + red
+    bold_green = bold + green
+    bold_yellow = bold + yellow
+    bold_blue = bold + blue
+    bold_magenta = bold + magenta
+    bold_cyan = bold + cyan
+    bold_gray = bold + gray
+
 
 RunResult = namedtuple('RunResult', 'out,exitcode')
