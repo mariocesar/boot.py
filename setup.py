@@ -9,12 +9,11 @@ if sys.version_info < (3, 6):
 description, long_description = (
     open('README.rst', 'rt').read().split('\n\n', 1))
 
-
 setup(
     name='boot.py',
     author='Mario César Señoranis Ayala',
     author_email='mariocesar.c50@gmail.com',
-    version='0.8',
+    version='0.9',
     url='https://github.com/mariocesar/boot.py',
     description=description,
     long_description=f'\n{long_description}',

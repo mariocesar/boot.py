@@ -116,7 +116,6 @@ You can also compose tasks to decide what to execute and what order.
             'requirements': requirements,
         }
 
-
         if len(sys.argv) == 1:
             if sys.argv[0] in tasks:
                 tasks[sys.argv[0]]()

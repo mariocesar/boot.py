@@ -1,14 +1,15 @@
+import argparse
 import json
 import os
 import pathlib
 import shlex
 import subprocess
 import sys
-from collections.abc import MutableMapping
+from collections.abc import MutableMapping, Callable
 from contextlib import contextmanager
 from urllib.request import urlopen
 
-from .types import Color, RunResult
+from .types import Color, RunResult, TasksCliResult
 
 assert sys.version_info >= (3, 6), "This projects needs python3.6 or greater"
 
@@ -168,3 +169,43 @@ class Task(MutableMapping):
 
 def task(func):
     return Task(func)
+
+
+def create_tasks_cli(actions: dict):
+    """
+    Parse and run given actions
+
+    >>> cli = create_tasks_cli({
+    ...    'default': lambda: 'run default',
+    ...    'directories': lambda: 'creating directories',
+    ...    'envfile': lambda: 'creating envfile'
+    ... })
+    >>> cli.parser
+    >>> cli.run()
+    """
+
+    parser = argparse.ArgumentParser(argument_default='default')
+    choices = []
+
+    for name, task in actions.items():
+        assert isinstance(task, Callable), f'functions is not callable'
+        choices.append(name)
+
+    parser.add_argument('actions',
+                        metavar='action', nargs='*',
+                        help='Run this action', choices=choices)
+
+    def main(args: list = None):
+        if not args:
+            args = sys.argv
+
+        options = parser.parse_args(args[1:])
+
+        if options.actions == 'default':
+            if 'default' in actions:
+                actions['default']()
+        else:
+            for name in options.actions:
+                actions[name]()
+
+    return TasksCliResult(parser, main)
