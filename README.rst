@@ -125,3 +125,20 @@ You can also compose tasks to decide what to execute and what order.
         else:
             default()
 
+There are helpers to build scripts with less code, for example
+we can replace in the code above the main call with a
+a simple task argument parser:
+
+
+.. code-block:: python
+
+    from boot.cli import ActionsCommand
+
+    if __name__ == '__main__':
+        ActionsCommand.main(
+            default=build >> requirements,
+            build=build,
+            requirements=requirements,
+        }
+
+This parse `--help` 
