@@ -1,15 +1,14 @@
-import argparse
 import json
 import os
 import pathlib
 import shlex
 import subprocess
 import sys
-from collections.abc import MutableMapping, Callable
+from collections.abc import MutableMapping
 from contextlib import contextmanager
 from urllib.request import urlopen
 
-from .types import Color, RunResult, TasksCliResult
+from .types import Color, RunResult
 
 assert sys.version_info >= (3, 6), "This projects needs python3.6 or greater"
 
@@ -45,6 +44,30 @@ def indent():
     yield
 
     sys.stdout.write = old_write
+
+
+@contextmanager
+def withenv(**kwargs):
+    """Temporary override the os.environ values."""
+
+    old_values = {}
+    prune = []
+
+    for name, value in kwargs.items():
+        if name in os.environ:
+            old_values[name] = os.environ.get(name)
+        else:
+            prune.append(name)
+        os.environ[name] = value
+
+    try:
+        yield
+    finally:
+        for name in prune:
+            del os.environ[name]
+
+        for name, value in old_values:
+            os.environ[name] = value
 
 
 def prompt(spec_path: str):
@@ -132,7 +155,7 @@ def run(command: str) -> RunResult:
 
 
 class Task(MutableMapping):
-    __slots__ = ['_queue', '_context']
+    __slots__ = ['_queue', '_context', '__doc__']
 
     def __init__(self, func, *args):
         self._context = {}
@@ -168,44 +191,6 @@ class Task(MutableMapping):
 
 
 def task(func):
-    return Task(func)
-
-
-def create_tasks_cli(actions: dict):
-    """
-    Parse and run given actions
-
-    >>> cli = create_tasks_cli({
-    ...    'default': lambda: 'run default',
-    ...    'directories': lambda: 'creating directories',
-    ...    'envfile': lambda: 'creating envfile'
-    ... })
-    >>> cli.parser
-    >>> cli.run()
-    """
-
-    parser = argparse.ArgumentParser(argument_default='default')
-    choices = []
-
-    for name, task in actions.items():
-        assert isinstance(task, Callable), f'functions is not callable'
-        choices.append(name)
-
-    parser.add_argument('actions',
-                        metavar='action', nargs='*',
-                        help='Run this action', choices=choices)
-
-    def main(args: list = None):
-        if not args:
-            args = sys.argv
-
-        options = parser.parse_args(args[1:])
-
-        if options.actions == 'default':
-            if 'default' in actions:
-                actions['default']()
-        else:
-            for name in options.actions:
-                actions[name]()
-
-    return TasksCliResult(parser, main)
+    inner = Task(func)
+    setattr(inner, '__doc__', func.__doc__)
+    return inner

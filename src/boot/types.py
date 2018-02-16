@@ -24,4 +24,3 @@ class Color:
 
 
 RunResult = namedtuple('RunResult', 'out,exitcode')
-TasksCliResult = namedtuple('TasksCliResult', 'parser,run')
