@@ -17,6 +17,7 @@ __all__ = ['echo', 'abort', 'warn', 'indent', 'step', 'run', 'task', 'Task']
 
 def echo(message: str, end='\n'):
     sys.stdout.write(message + end)
+    sys.stdout.flush()
 
 
 def abort(message: str):
