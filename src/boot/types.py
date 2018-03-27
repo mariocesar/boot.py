@@ -23,4 +23,9 @@ class Color:
     bold_gray = bold + gray
 
 
-RunResult = namedtuple('RunResult', 'out,exitcode')
+class RunResult(namedtuple('RunResult', 'out,err,exitcode')):
+    def __str__(self):
+        return self.out
+
+    def ok(self):
+        return self.exitcode != 0
