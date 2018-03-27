@@ -152,7 +152,7 @@ def cd(path: str):
 def run(command: str, verbose: int = VERBOSE_DEFAULT, silent: bool = False) -> RunResult:
     """Run a shell command, returns the output and exitcode"""
     if verbose > 0:
-        echo(f'\n █ {command}')
+        echo(f' > {command}')
 
     proc = subprocess.Popen(
         shlex.split(command),
@@ -164,15 +164,16 @@ def run(command: str, verbose: int = VERBOSE_DEFAULT, silent: bool = False) -> R
     ret = RunResult(stdout.decode(), stderr.decode(), proc.returncode)
 
     if not (silent or ret.ok):
-        with indent(' █ '):
+        with indent(' < '):
             echo(ret.out)
             echo(ret.err)
         exit(1)
 
     if verbose > 1:
-        with indent(' ▒ '):
+        with indent(' < '):
             echo(ret.out)
-            echo(ret.err)
+            if ret.err.strip():
+                echo(ret.err)
 
     return ret
 
