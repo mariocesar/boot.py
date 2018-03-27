@@ -142,8 +142,10 @@ def cd(path: str):
         os.chdir(old)
 
 
-def run(command: str) -> RunResult:
+def run(command: str, verbose: bool=False) -> RunResult:
     """Run a shell command, returns the output and exitcode"""
+    if verbose:
+        echo('+{command}')
 
     proc = subprocess.Popen(
         shlex.split(command),
@@ -152,7 +154,12 @@ def run(command: str) -> RunResult:
 
     (stdout, stderr) = proc.communicate()
 
-    return RunResult(stdout.decode(), proc.returncode)
+    ret = RunResult(stdout.decode(), stderr.decode(), proc.returncode)
+
+    if verbose:
+        echo(ret)
+
+    return ret
 
 
 class Task(MutableMapping):
