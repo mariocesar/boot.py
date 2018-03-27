@@ -14,7 +14,9 @@ assert sys.version_info >= (3, 6), "This projects needs python3.6 or greater"
 
 __all__ = ['echo', 'abort', 'warn', 'indent', 'step', 'run', 'task', 'Task']
 
-VERBOSE_DEFAULT = os.environ.get('BOOT_PY_VERBOSE', False) == 'True'
+VERBOSE_DEFAULT = os.environ.get('BOOT_PY_VERBOSE', 0)
+
+assert isinstance(VERBOSE_DEFAULT, int)
 
 
 def echo(message: str, end='\n'):
@@ -147,9 +149,9 @@ def cd(path: str):
         os.chdir(old)
 
 
-def run(command: str, verbose: bool = VERBOSE_DEFAULT) -> RunResult:
+def run(command: str, verbose: int = VERBOSE_DEFAULT, silent: bool = False) -> RunResult:
     """Run a shell command, returns the output and exitcode"""
-    if verbose:
+    if verbose > 0:
         echo(f'\n █ {command}')
 
     proc = subprocess.Popen(
@@ -161,7 +163,13 @@ def run(command: str, verbose: bool = VERBOSE_DEFAULT) -> RunResult:
 
     ret = RunResult(stdout.decode(), stderr.decode(), proc.returncode)
 
-    if verbose:
+    if not (silent or ret.ok):
+        with indent(' █ '):
+            echo(ret.out)
+            echo(ret.err)
+        exit(1)
+
+    if verbose > 1:
         with indent(' ▒ '):
             echo(ret.out)
             echo(ret.err)
