@@ -14,6 +14,8 @@ assert sys.version_info >= (3, 6), "This projects needs python3.6 or greater"
 
 __all__ = ['echo', 'abort', 'warn', 'indent', 'step', 'run', 'task', 'Task']
 
+VERBOSE_DEFAULT = os.environ.get('BOOT_PY_VERBOSE', False) == 'True'
+
 
 def echo(message: str, end='\n'):
     sys.stdout.write(message + end)
@@ -32,13 +34,16 @@ def warn(message: str):
 
 
 @contextmanager
-def indent():
+def indent(prefix='    '):
     """Indent the message given"""
     old_write = sys.stdout.write
-    prefix = '    {}'.format
+    _prefix = f'{prefix}{{}}'.format
 
     def write(val):
-        old_write(prefix(val))
+        for line in val.split('\n'):
+            old_write(_prefix(line))
+            old_write('\n')
+            sys.stdout.flush()
 
     sys.stdout.write = write
 
@@ -142,10 +147,10 @@ def cd(path: str):
         os.chdir(old)
 
 
-def run(command: str, verbose: bool=False) -> RunResult:
+def run(command: str, verbose: bool = VERBOSE_DEFAULT) -> RunResult:
     """Run a shell command, returns the output and exitcode"""
     if verbose:
-        echo('+{command}')
+        echo(f'\n █ {command}')
 
     proc = subprocess.Popen(
         shlex.split(command),
@@ -157,7 +162,9 @@ def run(command: str, verbose: bool=False) -> RunResult:
     ret = RunResult(stdout.decode(), stderr.decode(), proc.returncode)
 
     if verbose:
-        echo(ret)
+        with indent(' ▒ '):
+            echo(ret.out)
+            echo(ret.err)
 
     return ret
 
