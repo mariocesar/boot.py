@@ -8,6 +8,8 @@ from collections.abc import MutableMapping
 from contextlib import contextmanager
 from urllib.request import urlopen
 
+from boot.facts import FactFile
+from boot.utils import sha1sum
 from .types import Color, RunResult
 
 assert sys.version_info >= (3, 6), "This projects needs python3.6 or greater"
@@ -179,12 +181,20 @@ def run(command: str, verbose: int = VERBOSE_DEFAULT, silent: bool = False) -> R
 
 
 class Task(MutableMapping):
-    __slots__ = ['_queue', '_context', '__doc__']
+    __slots__ = ['_queue', '_context', '__doc__', '_facts']
 
     def __init__(self, func, *args):
         self._context = {}
         self._queue = []
         self._queue.append(func)
+        self._facts = None
+
+    @property
+    def facts(self):
+        if self._facts is None:
+            self._facts = FactFile('facts.json')
+
+        return self._facts
 
     def __getitem__(self, key):
         return self._context[key]
@@ -209,9 +219,28 @@ class Task(MutableMapping):
         return self
 
     def __call__(self, *args, **kwargs):
+        self.facts.checkout()
+
         for func in self._queue:
             func(self)
+
+        self.facts.commit()
+
         return self
+
+    def file_changed(self, path):
+        if 'sha1sums' not in self.facts:
+            self.facts['sha1sums'] = {}
+
+        new_sum = sha1sum(path)
+
+        if path in self.facts['sha1sums']:
+            if new_sum == self.facts['sha1sums'][path]:
+                return False
+
+        self.facts['sha1sums'][path] = new_sum
+
+        return True
 
 
 def task(func):
