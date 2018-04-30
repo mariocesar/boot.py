@@ -6,10 +6,13 @@ import subprocess
 import sys
 from collections.abc import MutableMapping
 from contextlib import contextmanager
+from copy import copy
+from typing import Iterable, Callable, Union
 from urllib.request import urlopen
 
 from boot.facts import FactFile
 from boot.utils import sha1sum
+
 from .types import Color, RunResult
 
 assert sys.version_info >= (3, 6), "This projects needs python3.6 or greater"
@@ -183,11 +186,21 @@ def run(command: str, verbose: int = VERBOSE_DEFAULT, silent: bool = False) -> R
 class Task(MutableMapping):
     __slots__ = ['_queue', '_context', '__doc__', '_facts']
 
-    def __init__(self, func, *args):
-        self._context = {}
+    def __init__(self, func: Union[Iterable[Callable], Callable], context: dir = None):
+        self._context = context if context else {}
         self._queue = []
-        self._queue.append(func)
+
+        if isinstance(func, Iterable):
+            self._queue.extend(func)
+        elif isinstance(func, Callable):
+            self._queue.append(func)
+        else:
+            raise ValueError(f'Incorrect type for func: {func!r}')
+
         self._facts = None
+
+    def __copy__(self):
+        return Task(func=self._queue, context=self._context)
 
     @property
     def facts(self):
@@ -213,10 +226,15 @@ class Task(MutableMapping):
 
     def __rshift__(self, other):
         if isinstance(other, Task):
-            self._queue.extend(other._queue)
+            queue = self._queue + other._queue
+            context = copy(other._context)
+        elif isinstance(other, Callable):
+            queue = self._queue + [other]
+            context = copy(self._context)
         else:
-            self._queue.append(other)
-        return self
+            raise ValueError(f'Can not compose tasks with {other!r}')
+
+        return Task(func=queue, context=context)
 
     def __call__(self, *args, **kwargs):
         self.facts.checkout()
